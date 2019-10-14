@@ -10,6 +10,7 @@ import argparse
 import csv
 import hashlib
 from zipfile import ZipFile
+import configparser
 
 
 def csv_archive(zip_file_name):
@@ -20,6 +21,7 @@ def csv_archive(zip_file_name):
         file_to_zip.write(zip_file_name)
     # deleting the csv file
     os.remove(zip_file_name)
+    print('{}.zip created...'.format(zip_file_name))
 
 
 def finder(dir_name, csv_file_name):
@@ -68,10 +70,17 @@ def finder(dir_name, csv_file_name):
 def main():
     """ Main Function of the program """
     parser = argparse.ArgumentParser()
-    parser.add_argument("dir", help="The directory you want to access", type=str)
-    parser.add_argument("csv_file_name", help="The file name you want for the csv file", type=str)
+    config = configparser.ConfigParser()
+    parser.add_argument("dir", nargs='?', help="The directory you want to access", type=str)
+    parser.add_argument("csv_file_name", nargs='?', help="The file name you want for the csv file", type=str)
     args = parser.parse_args()
-    finder(args.dir, args.csv_file_name)
+    # when the user put empty arguments
+    if args.dir is None and args.csv_file_name is None:
+        config.read('setup.ini')
+        # using the default arguments from setup.ini
+        finder(config['arguments']['file path'], config['arguments']['file name'])
+    else:
+        finder(args.dir, args.csv_file_name)
 
 
 if __name__ == '__main__':
