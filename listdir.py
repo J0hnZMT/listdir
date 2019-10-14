@@ -19,7 +19,7 @@ def finder(dir_name, csv_file_name):
     else:
         try:
             # create a csv file
-            with open(csv_file_name, "w+") as csv_file:
+            with open(csv_file_name, "w+", newline='') as csv_file:
                 # header for the csv file
                 field_header = ['Parent Name', 'File Name', 'File Size']
                 csv_writer = csv.DictWriter(csv_file, fieldnames=field_header)
@@ -27,9 +27,8 @@ def finder(dir_name, csv_file_name):
                 os.chdir(dir_name)
                 # get the parent directory path, file names and file size
                 for dir_path, dir_names, file_names in os.walk(dir_name):
-                    os.chdir(dir_path)
                     for file_name in file_names:
-                        file_size = os.stat(file_name).st_size
+                        file_size = os.path.getsize(os.path.join(dir_path, file_name))
                         # store the data in a dictionary
                         report = {'Parent Name': str(dir_path), 'File Name': file_name, 'File Size': file_size}
                         # store the data by row in the csv file
