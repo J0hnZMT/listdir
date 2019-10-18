@@ -1,5 +1,5 @@
-""" A program that can store Parent paths, File names and File size of the selected directory and its sub directories to
-    a csv file.
+""" A program that can store Parent paths, File names, File size and MD5 and SHA-1 hashes of the selected directory and
+    its sub directories to a csv file.
 
     to use type in command line python listdir.py <directory path> <csv file name>
     then press enter a csv file will be saved with file name you typed
@@ -9,7 +9,7 @@ import os
 import argparse
 import csv
 import hashlib
-from zipfile import ZipFile
+import zipfile
 import configparser
 from datetime import datetime
 
@@ -38,11 +38,11 @@ def sha1_hash(file):
     return hash_sha1.hexdigest()
 
 
-def csv_archive(zip_file_name):
+def csv_archive(zip_file_name, dir_path):
     # writing files to a zipfile
-    os.chdir("C:\\Users\\TEU_USER\\Documents\\python-exer\\listdir")
+    os.chdir(dir_path)
     zip_name = "{}.zip".format(zip_file_name)
-    with ZipFile(zip_name, 'w') as file_to_zip:
+    with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as file_to_zip:
         file_to_zip.write(zip_file_name)
     # deleting the csv file
     os.remove(zip_file_name)
@@ -58,14 +58,16 @@ def add_date_time(csv_file):
 
 
 def list_dir(dir_name, csv_file_name):
-    find_path = os.path.exists(dir_name)
-    if not find_path:
+    dir_name_path = r"{}".format(dir_name)
+    file = r"{}".format(csv_file_name)
+    if not os.path.exists(dir_name_path):
         print("Path not found!")
     else:
         try:
             # create a csv file
-            csv_name = add_date_time(csv_file_name)
-            with open(csv_name, "w+", newline='') as csv_file:
+            csv_name = add_date_time(file)
+            os.chdir(dir_name_path)
+            with open(csv_name, "w+", newline='', encoding='utf-8') as csv_file:
                 # header for the csv file
                 field_header = ['Parent Name', 'File Name', 'File Size', 'MD5', 'SHA-1']
                 csv_writer = csv.DictWriter(csv_file, fieldnames=field_header)
@@ -73,18 +75,19 @@ def list_dir(dir_name, csv_file_name):
                 os.chdir(dir_name)
                 # get the parent directory path, file names and file size
                 for dir_path, dir_names, file_names in os.walk(dir_name):
+                    full_path = os.path.abspath(dir_path)
                     for file_name in file_names:
-                        os.chdir(dir_path)
-                        file_size = os.path.getsize(os.path.join(dir_path, file_name))
+                        file_with_path = os.path.join(dir_path, file_name)
+                        file_size = os.path.getsize(file_with_path)
                         # get the hashes of the files
-                        md5_file_hash = md5_hash(file_name)
-                        sha1_file_hash = sha1_hash(file_name)
+                        md5_file_hash = md5_hash(file_with_path)
+                        sha1_file_hash = sha1_hash(file_with_path)
                         # store the data in a dictionary
-                        report = {'Parent Name': str(dir_path), 'File Name': file_name, 'File Size': file_size, 'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
+                        report = {'Parent Name': full_path, 'File Name': file_name, 'File Size': file_size, 'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
                         # store the data by row in the csv file
                         csv_writer.writerow(report)
             # archive the csv output file
-            csv_archive(csv_name)
+            csv_archive(csv_name, dir_name)
         except OSError as e:
             # catch any error and display
             print("Ops, Something went wrong! {}".format(e))
@@ -99,7 +102,8 @@ def main():
     args = parser.parse_args()
     # when the user put empty arguments
     if args.dir is None and args.csv_file_name is None:
-        config.read('setup.ini')
+        path = os.path.dirname(__file__)
+        config.read(path + '/setup.ini')
         # using the default arguments from setup.ini
         list_dir(config['arguments']['file path'], config['arguments']['file name'])
     else:
