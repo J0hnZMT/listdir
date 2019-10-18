@@ -12,8 +12,8 @@ A program that can store Parent paths, File names and File size of the selected 
 
 To use as a package, simply do:
 
->>>import listdir
->>>listdir.list_dir(path,filename)
+import listdir
+listdir.list_dir(path,filename)
 
 To use in terminal, simply do:
 
