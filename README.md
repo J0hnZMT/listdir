@@ -23,6 +23,9 @@ in command line in windows:
 
 -C:\Users\user\Documents\>listdir <path> <file name>
 
+## How to Test
+
+--python -m pytest --cov=listdir test_listdir.py
 
 ## Author
 **Johnzel Tuddao** - *Initial work* - [J0hnZMT](https://github.com/J0hnZMT)
