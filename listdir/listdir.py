@@ -75,7 +75,6 @@ def list_dir(dir_name, csv_file_name):
                 os.chdir(dir_name)
                 # get the parent directory path, file names and file size
                 for dir_path, dir_names, file_names in os.walk(dir_name):
-                    full_path = os.path.abspath(dir_path)
                     for file_name in file_names:
                         file_with_path = os.path.join(dir_path, file_name)
                         file_size = os.path.getsize(file_with_path)
@@ -83,7 +82,7 @@ def list_dir(dir_name, csv_file_name):
                         md5_file_hash = md5_hash(file_with_path)
                         sha1_file_hash = sha1_hash(file_with_path)
                         # store the data in a dictionary
-                        report = {'Parent Name': full_path, 'File Name': file_name, 'File Size': file_size, 'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
+                        report = {'Parent Name': os.path.abspath(dir_path), 'File Name': file_name, 'File Size': file_size, 'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
                         # store the data by row in the csv file
                         csv_writer.writerow(report)
             # archive the csv output file
