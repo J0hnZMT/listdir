@@ -1,2 +1,2 @@
-from listdir.listdir import list_dir
+from listdir.listdir import *
 
