@@ -10,7 +10,7 @@ A program that can store Parent paths, File names and File size of the selected 
 
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
-To use as a package, simply do:
+To use as a module, simply do:
 
 import listdir
 listdir.list_dir(path,filename)
