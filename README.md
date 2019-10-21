@@ -8,22 +8,22 @@ A program that can store Parent paths, File names and File size of the selected 
 
 -eg. python listdir.py C:\Users result.csv
 
--using the -j or --json argument
+**using the -j or --json argument
 
 -eg. python listdir.py ~\Documents result.csv -j
 
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
-To use as a module, simply do:
+**To use as a module, simply do:
 
 import listdir
 listdir.list_dir(path,filename)
 
-To use in terminal, simply do:
+**To use in terminal, simply do:
 
 $ listdir <path> <file name>
 
-in command line in windows:
+**in command line in windows:
 
 -C:\Users\user\Documents\>listdir <path> <file name>
 
