@@ -192,6 +192,7 @@ def main():
     parser.add_argument("dir", nargs='?', help="The directory you want to access", type=str)
     parser.add_argument("csv_file_name", nargs='?', help="The file name you want for the csv file", type=str)
     group.add_argument("-j", "--json", help="Output a json file instead of csv file", action="store_true")
+    group.add_argument("-c", "--csv", help="Output a csv file instead of json file", action="store_true")
     args = parser.parse_args()
     # when the user put empty arguments
     if args.dir is None and args.csv_file_name is None:
@@ -201,7 +202,7 @@ def main():
         list_dir(config['arguments']['file path'], config['arguments']['file name'])
     elif args.json:
         json_create(args.dir, args.csv_file_name)
-    else:
+    elif args.csv:
         list_dir(args.dir, args.csv_file_name)
 
 
