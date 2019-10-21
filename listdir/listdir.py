@@ -16,6 +16,7 @@ import yaml
 import logging.config
 import logging
 import coloredlogs
+import json
 
 
 def setup_logging(default_path, default_level, env_key):
@@ -92,12 +93,20 @@ def csv_archive(zip_file_name, dir_path):
     return zip_name
 
 
-def add_date_time(csv_file):
+def csv_add_date_time(csv_file):
     # add date and time to the output
     now = datetime.now()
     datetime_now = now.strftime("%m-%d-%y %I-%M-%p")
     csv_filename_now = "{} {}.csv".format(csv_file, datetime_now)
     return csv_filename_now
+
+
+def json_add_date_time(json_file):
+    # add date and time to the output
+    now = datetime.now()
+    datetime_now = now.strftime("%m-%d-%y %I-%M-%p")
+    json_filename_now = "{} {}.json".format(json_file, datetime_now)
+    return json_filename_now
 
 
 def path_finder(dir_name):
@@ -107,7 +116,7 @@ def path_finder(dir_name):
 
 def csv_creator(dir_name, csv_file_name):
     # create a csv file
-    csv_name = add_date_time(csv_file_name)
+    csv_name = csv_add_date_time(csv_file_name)
     logger.info("{} file created...".format(csv_name))
     os.chdir(dir_name)
     with open(csv_name, "w+", newline='', encoding='utf-8') as csv_file:
@@ -145,12 +154,41 @@ def list_dir(dir_name, csv_file_name):
             logger.error("Ops, Something went wrong! {}".format(e), exc_info=True)
 
 
+def json_create(path_name, file_name):
+    parent_path = os.path.expanduser(path_name)
+    if not path_finder(parent_path):
+        logger.warning("{} path not found!".format(parent_path))
+    else:
+        logger.info("path exist...")
+        try:
+            new_json_file = json_add_date_time(file_name)
+            with open(new_json_file, 'a') as f:
+                for dir_path, dir_names, file_names in os.walk(parent_path):
+                    for file_name in file_names:
+                        file_with_path = "{}{}{}".format(dir_path, os.sep, file_name)
+                        file_size = os.path.getsize(file_with_path)
+                        # get the hashes of the files
+                        md5_file_hash = md5_hash(file_with_path)
+                        sha1_file_hash = sha1_hash(file_with_path)
+                        # store the data in a dictionary
+                        report = {'Parent Name': os.path.realpath(dir_path), 'File Name': file_name,
+                                  'File Size': file_size,
+                                  'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
+                        json.dump(report, f, indent=2)
+            logger.info("{} created...".format(csv_archive(new_json_file, parent_path)))
+        except OSError as e:
+            # catch any error and display
+            logger.error("Ops, Something went wrong! {}".format(e), exc_info=True)
+
+
 def main():
     """ Main Function of the program """
     parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
     config = configparser.ConfigParser()
     parser.add_argument("dir", nargs='?', help="The directory you want to access", type=str)
     parser.add_argument("csv_file_name", nargs='?', help="The file name you want for the csv file", type=str)
+    group.add_argument("-j", "--json", help="Output a json file instead of csv file", action="store_true")
     args = parser.parse_args()
     # when the user put empty arguments
     if args.dir is None and args.csv_file_name is None:
@@ -158,6 +196,8 @@ def main():
         config.read(path + '/setup.ini')
         # using the default arguments from setup.ini
         list_dir(config['arguments']['file path'], config['arguments']['file name'])
+    elif args.json:
+        json_create(args.dir, args.csv_file_name)
     else:
         list_dir(args.dir, args.csv_file_name)
 
