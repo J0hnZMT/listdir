@@ -36,10 +36,19 @@ def setup_logging(default_path, default_level, env_key):
                 logging.basicConfig(level=default_level)
                 coloredlogs.install(level=default_level)
     else:
-        logging.basicConfig(level=default_level, filename=logs.log,
+        logging.basicConfig(level=default_level, filename='logs.log',
                             format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
         coloredlogs.install(level=default_level)
         print('Failed to load configuration file. Using default configs')
+
+
+""" start the logging function """
+path = "logging.yaml"
+level = logging.DEBUG
+env = 'LOG_CFG'
+setup_logging(path, level, env)
+logger = logging.getLogger(__name__)
+logger.info("logger set..")
 
 
 def md5_hash(file_to_hash):
@@ -154,11 +163,4 @@ def main():
 
 
 if __name__ == '__main__':
-    """ start the logging function """
-    path = "logging.yaml"
-    level = logging.DEBUG
-    env = 'LOG_CFG'
-    setup_logging(path, level, env)
-    logger = logging.getLogger(__name__)
-    logger.info("logger set..")
     main()
