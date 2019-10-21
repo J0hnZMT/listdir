@@ -14,6 +14,14 @@ A program that can store Parent paths, File names and File size of the selected 
 
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
+## Optional Argument
+
+-j, --json     Output a json file instead of csv file
+
+## How to install
+
+pip install listdir
+
 **To use as a module, simply do:**
 
 import listdir
@@ -28,9 +36,6 @@ $ listdir <path> <file name>
 
 -C:\Users\user\Documents\>listdir <path> <file name>
 
-## Optional Argument
-
--j, --json     Output a json file instead of csv file
 
 ## Author
 **Johnzel Tuddao** - *Initial work* - [J0hnZMT](https://github.com/J0hnZMT)
