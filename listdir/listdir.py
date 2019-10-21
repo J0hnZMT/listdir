@@ -161,6 +161,8 @@ def json_create(path_name, file_name):
     else:
         logger.info("path exist...")
         try:
+            scanned_files = []
+            reports = {'Scanned': scanned_files}
             new_json_file = json_add_date_time(file_name)
             with open(new_json_file, 'a') as f:
                 for dir_path, dir_names, file_names in os.walk(parent_path):
@@ -174,7 +176,8 @@ def json_create(path_name, file_name):
                         report = {'Parent Name': os.path.realpath(dir_path), 'File Name': file_name,
                                   'File Size': file_size,
                                   'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
-                        json.dump(report, f, indent=2)
+                        scanned_files.append(report)
+                json.dump(reports, f, indent=2)
             logger.info("{} created...".format(csv_archive(new_json_file, parent_path)))
         except OSError as e:
             # catch any error and display
