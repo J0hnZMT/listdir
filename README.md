@@ -6,7 +6,7 @@ A program that can store Parent paths, File names and File size of the selected 
 ## How to Use
 -type in the command line python listdir.py <directory path> <csv file name>
 
--eg. python listdir.py C:\Users result.csv
+-eg. python listdir.py C:\Users result
 
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
