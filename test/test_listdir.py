@@ -4,12 +4,12 @@ import os
 
 test_file = "testfile"
 test_empty_file = "empty.txt"
+test_zip_file = "sample.test"
 test_relative_path = "."
 test_absolute_path = os.path.abspath("..")
 test_given_path = "C:\\Users"
-wrong_path = "C:\\Doc"
-md5_empty = "d41d8cd98f00b204e9800998ecf8427e"
-sha1_empty = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+md5_empty = "8274425de767b30b2fff1124ab54abb5"
+sha1_empty = "2201589aa3ed709b3665e4ff979e10c6ad5137fc"
 
 
 def test_add_date_time():
@@ -32,12 +32,4 @@ def test_sha1_hash():
 
 
 def test_csv_archive():
-    assert listdir.csv_archive(test_empty_file, test_relative_path) == "{}.zip".format(test_empty_file)
-
-
-def test_list_dir():
-    with pytest.raises(OSError) as exc_info:
-        listdir.list_dir(wrong_path, test_file)
-
-    exception_raised = exc_info.value
-    assert e.message == "Ops, Something went wrong! {}".format(OSError)
+    assert listdir.csv_archive(test_empty_file, test_relative_path) == "{}.zip".format(test_zip_file)
