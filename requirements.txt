@@ -24,3 +24,5 @@ virtualenv==16.7.5
 virtualenv-clone==0.5.3
 webencodings==0.5.1
 wrapt==1.11.2
+coloredlogs==10.0
+PyYAML==5.1.2

@@ -12,30 +12,64 @@ import hashlib
 import zipfile
 import configparser
 from datetime import datetime
+import yaml
+import logging.config
+import logging
+import coloredlogs
+
+
+def setup_logging(default_path, default_level, env_key):
+    """ Setup logging configuration """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            try:
+                config = yaml.safe_load(f.read())
+                logging.config.dictConfig(config)
+                coloredlogs.install()
+            except Exception as e:
+                print(e)
+                print('Error in Logging Configuration. Using default configs')
+                logging.basicConfig(level=default_level)
+                coloredlogs.install(level=default_level)
+    else:
+        logging.basicConfig(level=default_level, filename=logs.log,
+                            format="%(asctime)s:%(name)s:%(levelname)s:%(message)s")
+        coloredlogs.install(level=default_level)
+        print('Failed to load configuration file. Using default configs')
 
 
 def md5_hash(file_to_hash):
-    block_size = 65536
-    hash_md5 = hashlib.md5()
-    # getting the md5 hashes of files
-    with open(file_to_hash, 'rb') as hash_file:
-        buf = hash_file.read(block_size)
-        while len(buf) > 0:
-            hash_md5.update(buf)
+    try:
+        block_size = 65536
+        hash_md5 = hashlib.md5()
+        # getting the md5 hashes of files
+        with open(file_to_hash, 'rb') as hash_file:
             buf = hash_file.read(block_size)
-    return hash_md5.hexdigest()
+            while len(buf) > 0:
+                hash_md5.update(buf)
+                buf = hash_file.read(block_size)
+        return hash_md5.hexdigest()
+    except FileNotFoundError as e:
+        logger.exception(e)
 
 
 def sha1_hash(file):
-    block_size = 65536
-    hash_sha1 = hashlib.sha1()
-    # getting the sha1 hashes of files
-    with open(file, 'rb') as hash_file:
-        buf = hash_file.read(block_size)
-        while len(buf) > 0:
-            hash_sha1.update(buf)
+    try:
+        block_size = 65536
+        hash_sha1 = hashlib.sha1()
+        # getting the sha1 hashes of files
+        with open(file, 'rb') as hash_file:
             buf = hash_file.read(block_size)
-    return hash_sha1.hexdigest()
+            while len(buf) > 0:
+                hash_sha1.update(buf)
+                buf = hash_file.read(block_size)
+        return hash_sha1.hexdigest()
+    except FileNotFoundError as e:
+        logger.exception(e)
 
 
 def csv_archive(zip_file_name, dir_path):
@@ -63,42 +97,43 @@ def path_finder(dir_name):
 
 
 def csv_creator(dir_name, csv_file_name):
-    parent_path = os.path.abspath(dir_name)
     # create a csv file
     csv_name = add_date_time(csv_file_name)
-    os.chdir(parent_path)
+    logger.info("{} file created...".format(csv_name))
+    os.chdir(dir_name)
     with open(csv_name, "w+", newline='', encoding='utf-8') as csv_file:
         # header for the csv file
         field_header = ['Parent Name', 'File Name', 'File Size', 'MD5', 'SHA-1']
         csv_writer = csv.DictWriter(csv_file, fieldnames=field_header)
         csv_writer.writeheader()
         # get the parent directory path, file names and file size
-        for dir_path, dir_names, file_names in os.walk(parent_path):
+        for dir_path, dir_names, file_names in os.walk(dir_name):
             for file_name in file_names:
-                file_with_path = os.path.join(dir_path, file_name)
+                file_with_path = "{}{}{}".format(dir_path, os.sep, file_name)
                 file_size = os.path.getsize(file_with_path)
                 # get the hashes of the files
                 md5_file_hash = md5_hash(file_with_path)
                 sha1_file_hash = sha1_hash(file_with_path)
                 # store the data in a dictionary
                 report = {'Parent Name': os.path.abspath(dir_path), 'File Name': file_name, 'File Size': file_size,
-                          'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
+                           'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
                 # store the data by row in the csv file
                 csv_writer.writerow(report)
     # archive the csv output file
-    print("{} created...".format(csv_archive(csv_name, parent_path)))
+    logger.info("{} created...".format(csv_archive(csv_name, dir_name)))
 
 
 def list_dir(dir_name, csv_file_name):
-    parent_path = os.path.abspath(dir_name)
+    parent_path = os.path.expanduser(dir_name)
     if not path_finder(parent_path):
-        print("Path not found!")
+        logger.warning("{} path not found!".format(parent_path))
     else:
+        logger.info("path exist...")
         try:
             csv_creator(parent_path, csv_file_name)
         except OSError as e:
             # catch any error and display
-            print("Ops, Something went wrong! {}".format(e))
+            logger.error("Ops, Something went wrong! {}".format(e), exc_info=True)
 
 
 def main():
@@ -119,4 +154,11 @@ def main():
 
 
 if __name__ == '__main__':
+    """ start the logging function """
+    path = "logging.yaml"
+    level = logging.DEBUG
+    env = 'LOG_CFG'
+    setup_logging(path, level, env)
+    logger = logging.getLogger(__name__)
+    logger.info("logger set..")
     main()
