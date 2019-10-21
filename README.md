@@ -13,6 +13,7 @@ A program that can store Parent paths, File names and File size of the selected 
 To use as a module, simply do:
 
 import listdir
+
 listdir.list_dir(path,filename)
 
 To use in terminal, simply do:
