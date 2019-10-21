@@ -4,9 +4,11 @@ Machine Problem 2
 A program that can store Parent paths, File names and File size of the selected directory and its sub directories to a csv file.
 
 ## How to Use
--type in the command line python listdir.py <directory path> <csv file name>
+-type in the command line python listdir.py <directory path> <csv file name> <command>
+  
+**using the -c or --csv argument**
 
--eg. python listdir.py C:\Users result.csv
+-eg. python listdir.py C:\Users result.csv -c
 
 **using the -j or --json argument**
 
@@ -14,9 +16,14 @@ A program that can store Parent paths, File names and File size of the selected 
 
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
-## Optional Argument
+## Optional Arguments
+
+ -h, --help     show this help message and exit
 
 -j, --json     Output a json file instead of csv file
+
+-c, --csv      Output a csv file instead of json file
+
 
 ## How to install
 
