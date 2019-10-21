@@ -8,6 +8,10 @@ A program that can store Parent paths, File names and File size of the selected 
 
 -eg. python listdir.py C:\Users result.csv
 
+-using the -j or --json argument
+
+-eg. python listdir.py ~\Documents result.csv -j
+
 -then press enter, a csv file will be saved with csv file name you typed with all the data about (parent path, file name, file size) directory and sub-directories you typed on the command line.
 
 To use as a module, simply do:
@@ -23,6 +27,9 @@ in command line in windows:
 
 -C:\Users\user\Documents\>listdir <path> <file name>
 
+## Optional Argument
+
+-j, --json     Output a json file instead of csv file
 
 ## Author
 **Johnzel Tuddao** - *Initial work* - [J0hnZMT](https://github.com/J0hnZMT)
