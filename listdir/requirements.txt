@@ -1,0 +1,19 @@
+################################################################################
+# This requirements file has been automatically generated from `Pipfile` with
+# `pipenv-to-requirements`
+#
+#
+# This has been done to maintain backward compatibility with tools and services
+# that do not support `Pipfile` yet.
+#
+# Do NOT edit it directly, use `pipenv install [-d]` to modify `Pipfile` and
+# `Pipfile.lock` and then regenerate `requirements*.txt`.
+################################################################################
+
+certifi==2019.9.11
+pbr==5.4.3
+pipenv==2018.11.26
+psycopg2==2.8.4
+pyyaml==5.1.2
+virtualenv-clone==0.5.3
+virtualenv==16.7.7
