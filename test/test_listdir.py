@@ -1,6 +1,7 @@
 import listdir
 from datetime import datetime
 import os
+import pytest
 
 test_file = "testfile"
 test_empty_file = "empty.txt"
@@ -15,6 +16,7 @@ sha1_empty = "2201589aa3ed709b3665e4ff979e10c6ad5137fc"
 def test_add_date_time():
     datetime_now = datetime.now().strftime("%m-%d-%y %I-%M-%p")
     assert listdir.add_date_time(test_file) == "{} {}.csv".format(test_file, datetime_now)
+    assert listdir.csv_archive(test_empty_file, test_relative_path) == "{}.zip".format(test_zip_file)
 
 
 def test_path_finder():
@@ -33,3 +35,7 @@ def test_sha1_hash():
 
 def test_csv_archive():
     assert listdir.csv_archive(test_empty_file, test_relative_path) == "{}.zip".format(test_zip_file)
+
+
+if __name__ == '__main__':
+    pytest.main()
