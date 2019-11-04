@@ -25,11 +25,13 @@ from configparser import ConfigParser
 class Password:
 
     DEFAULT = 'Prompt if not specified'
+    # to get the password using getpass
 
     def __init__(self, passwd):
         if passwd == self.DEFAULT:
             passwd = getpass.getpass('Database Password: ')
         self.passwd = passwd
+    # return the input password
 
     def __str__(self):
         return self.passwd
@@ -85,7 +87,6 @@ def config_open(filename='setup.ini', section='database'):
 
 def db_check(dir_name, db_pw):
     conn = None
-    # logger.info(conn.get_dsn_parameters())
     try:
         params = config_open()
         conn = psycopg2.connect(**params, password=db_pw)
