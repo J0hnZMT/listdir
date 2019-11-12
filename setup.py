@@ -28,5 +28,6 @@ setup(name='listdir',
       entry_points={
           'console_scripts': ['listdir=listdir.listdir:main'],
       },
-      include_package_data=True
+      include_package_data=True,
+      install_requires=['PyYAML', 'pika']
       )

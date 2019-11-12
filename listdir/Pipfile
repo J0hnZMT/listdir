@@ -4,10 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pika = "*"
 
 [packages]
 psycopg2 = "*"
 pyyaml = "*"
+pika = "*"
 
 [requires]
 python_version = "3.7"

@@ -20,23 +20,10 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import getpass
 from configparser import ConfigParser
+import pika
 
 
-class Password:
-
-    DEFAULT = 'Prompt if not specified'
-    # to get the password using getpass
-
-    def __init__(self, passwd):
-        if passwd == self.DEFAULT:
-            passwd = getpass.getpass('Database Password: ')
-        self.passwd = passwd
-    # return the input password
-
-    def __str__(self):
-        return self.passwd
-
-
+# setup the logger
 def setup_logging(default_path, default_level, env_key):
     """ Setup logging configuration """
     path = default_path
@@ -60,20 +47,21 @@ def setup_logging(default_path, default_level, env_key):
 
 """ start the logging function """
 path = "logging.yaml"
-level = logging.DEBUG
+level = logging.INFO
 env = 'LOG_CFG'
 setup_logging(path, level, env)
 logger = logging.getLogger(__name__)
 logger.info("logger set..")
 
 
-def config_open(filename='setup.ini', section='database'):
+# access the config file
+def config_open(filename, section):
     # create a parser
     parser = ConfigParser()
     # read config file
     parser.read(filename)
 
-    # get section, default to postgresql
+    # get section
     db = {}
     if parser.has_section(section):
         params = parser.items(section)
@@ -85,10 +73,16 @@ def config_open(filename='setup.ini', section='database'):
     return db
 
 
+config_file = 'setup.ini'
+section = 'database'
+
+
+# database
 def db_check(dir_name, db_pw):
     conn = None
     try:
-        params = config_open()
+        global config_file, section
+        params = config_open(config_file, section)
         conn = psycopg2.connect(**params, password=db_pw)
         conn.autocommit = True
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -116,13 +110,14 @@ def db_check(dir_name, db_pw):
 def db_insert(dir_name, db_pw):
     conn = None
     try:
-        params = config_open()
+        global config_file, section
+        params = config_open(config_file, section)
         conn = psycopg2.connect(**params,
                                 password=db_pw,
                                 database='listdirdb')
         conn.autocommit = True
         cur = conn.cursor()
-        insert_query = """INSERT INTO public.result(parent_name, file_name, file_size, md5, sha1) VALUES (%s, %s, %s, %s, %s);"""
+        insert_query = """INSERT INTO result(parent_name, file_name, file_size, md5, sha1) VALUES (%s, %s, %s, %s, %s);"""
         for dir_path, dir_names, file_names in os.walk(dir_name):
             for file_name in file_names:
                 file_with_path = "{}{}{}".format(dir_path, os.sep, file_name)
@@ -146,20 +141,21 @@ def db_insert(dir_name, db_pw):
 def table_check(dir_name, db_pw):
     conn = None
     try:
-        params = config_open()
+        global config_file, section
+        params = config_open(config_file, section)
         conn = psycopg2.connect(**params,
                                 password=db_pw,
                                 database='listdirdb')
         conn.autocommit = True
         cur = conn.cursor()
-        cur.execute("SELECT to_regclass('public.result');")
+        cur.execute("SELECT to_regclass('result');")
         if cur.fetchone()[0]:
             logger.info("Table exist... continue with data insertion.")
             cur.close()
             db_insert(dir_name, db_pw)
         else:
             logger.info("Creating table result....")
-            table = """CREATE TABLE public.result(
+            table = """CREATE TABLE result(
                     id SERIAL NOT NULL PRIMARY KEY,
                     parent_name varchar NOT NULL,
                     file_name varchar NOT NULL,
@@ -208,7 +204,8 @@ def sha1_hash(file):
         logger.exception(e)
 
 
-def csv_archive(zip_file_name, dir_path):
+# archive
+def archive_file(zip_file_name, dir_path):
     # writing files to a zipfile
     zip_name = "{}.zip".format(zip_file_name)
     with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as file_to_zip:
@@ -219,25 +216,18 @@ def csv_archive(zip_file_name, dir_path):
     return zip_name
 
 
+def path_finder(dir_name):
+    check = os.path.exists(dir_name)
+    return check
+
+
+# csv
 def csv_add_date_time(csv_file):
     # add date and time to the output
     now = datetime.now()
     datetime_now = now.strftime("%m-%d-%y-%I-%M-%p")
     csv_filename_now = "{}-{}.csv".format(csv_file, datetime_now)
     return csv_filename_now
-
-
-def json_add_date_time(json_file):
-    # add date and time to the output
-    now = datetime.now()
-    datetime_now = now.strftime("%m-%d-%y-%I-%M-%p")
-    json_filename_now = "{}-{}.json".format(json_file, datetime_now)
-    return json_filename_now
-
-
-def path_finder(dir_name):
-    check = os.path.exists(dir_name)
-    return check
 
 
 def csv_creator(dir_name, csv_file_name):
@@ -263,7 +253,7 @@ def csv_creator(dir_name, csv_file_name):
                 # store the data by row in the csv file
                 csv_writer.writerow(report)
     # archive the csv output file
-    csv_archive(csv_name, dir_name)
+    archive_file(csv_name, dir_name)
 
 
 def list_dir(dir_name, csv_file_name):
@@ -277,6 +267,15 @@ def list_dir(dir_name, csv_file_name):
         except OSError as e:
             # catch any error and display
             logger.error("Ops, Something went wrong! {}".format(e), exc_info=True)
+
+
+# json
+def json_add_date_time(json_file):
+    # add date and time to the output
+    now = datetime.now()
+    datetime_now = now.strftime("%m-%d-%y-%I-%M-%p")
+    json_filename_now = "{}-{}.json".format(json_file, datetime_now)
+    return json_filename_now
 
 
 def json_create(path_name, file_name):
@@ -304,10 +303,38 @@ def json_create(path_name, file_name):
                                   'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
                         scanned_files.append(report)
                 json.dump(reports, f, indent=2)
-            csv_archive(new_json_file, parent_path)
+            archive_file(new_json_file, parent_path)
         except OSError as e:
             # catch any error and display
             logger.error("Ops, Something went wrong! {}".format(e), exc_info=True)
+
+
+# producer
+def producer(dir_path):
+    global config_file
+    rabbit = 'rabbitmq'
+    params = config_open(config_file, rabbit)
+    host_name = params.get('host')
+    queue_name = params.get('queue')
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=host_name))
+    channel = connection.channel()
+    channel.queue_declare(queue=queue_name, durable=True)
+    for dir_path, dir_names, file_names in os.walk(dir_path):
+        for file_name in file_names:
+            file_with_path = "{}{}{}".format(dir_path, os.sep, file_name)
+            file_size = os.path.getsize(file_with_path)
+            # get the hashes of the files
+            md5_file_hash = md5_hash(file_with_path)
+            sha1_file_hash = sha1_hash(file_with_path)
+            # store the data in a dictionary
+            report = {'Parent Name': os.path.realpath(dir_path), 'File Name': file_name,
+                      'File Size': file_size,
+                      'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
+            json_result = {'data': report}
+            channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(json_result))
+            print(json_result)
+    connection.close()
 
 
 def main():
@@ -317,11 +344,11 @@ def main():
     config = configparser.ConfigParser()
     parser.add_argument("dir", nargs='?', help="The directory you want to access", type=str)
     parser.add_argument("csv_file_name", nargs='?', help="The file name you want for the csv file", type=str)
-    parser.add_argument('-p', '--password', type=Password, help='Password used in database',
-                        default=Password.DEFAULT)
     group.add_argument("-j", "--json", help="Output a json file instead of csv file", action="store_true")
     group.add_argument("-c", "--csv", help="Output a csv file instead of json file", action="store_true")
     group.add_argument("-d", "--database", help="Insert the data to a database instead of saving to a file",
+                       action="store_true")
+    group.add_argument("-s", "--send", help="Insert the data to a queue instead of saving to a file",
                        action="store_true")
     args = parser.parse_args()
     # when the user put empty arguments
@@ -335,7 +362,10 @@ def main():
     elif args.csv:
         list_dir(args.dir, args.csv_file_name)
     elif args.database:
-        db_check(args.dir, args.password)
+        password = getpass.getpass('Database Password: ')
+        db_check(args.dir, password)
+    elif args.send:
+        producer(args.dir)
 
 
 if __name__ == '__main__':
