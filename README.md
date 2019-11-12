@@ -1,7 +1,7 @@
 # listdir
 Machine Problem 2
 
-A program that can store Parent paths, File names and File size of the selected directory and its sub directories to a csv file.
+A program that can retreive Parent paths, File names and File size of the selected directory and its sub directories to a given path.
 
 ## Optional Arguments
 
