@@ -76,4 +76,3 @@ $ listdir <path> <file name>
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
->>>>>>> 6348dd599e646b030b7ff5e32e93a192d41fc3d1
