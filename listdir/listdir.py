@@ -316,8 +316,7 @@ def producer(dir_path):
     params = config_open(config_file, rabbit)
     host_name = params.get('host')
     queue_name = params.get('queue')
-    connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host=host_name))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host_name))
     channel = connection.channel()
     channel.queue_declare(queue=queue_name, durable=True)
     for dir_path, dir_names, file_names in os.walk(dir_path):
@@ -333,7 +332,7 @@ def producer(dir_path):
                       'MD5': md5_file_hash, 'SHA-1': sha1_file_hash}
             json_result = {'data': report}
             channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(json_result))
-            print(json_result)
+            logger.info(json_result)
     connection.close()
 
 
